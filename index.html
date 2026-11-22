@@ -1,0 +1,584 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset=utf8>
+    <meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <style>
+        :root {
+            color-scheme: light;
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px)
+        }
+
+        html {
+            scroll-padding-top: env(safe-area-inset-top, 0px)
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font: 14px -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #fff;
+            color: #000
+        }
+
+        img {
+            max-width: 100%
+        }
+
+        [hidden]:not([hidden=until-found i]) {
+            display: none !important
+        }
+    </style>
+</head>
+
+<body>
+    <title>Calculator Toolkit</title>
+    <meta name="claude:viewport-fit-sides" content="cover">
+    <style>
+        :root {
+            --bg: linear-gradient(160deg, #9caf88, #8aa6a3 40%, #5b6fae 75%, #4f6d9f);
+            --bgc: #8aa6a3;
+            --card: #fff;
+            --fg: #1f2937;
+            --mut: #6b7280;
+            --a: #4f46e5;
+            --d: #4338ca;
+            --hdr: #4f46e5;
+            --b: #e5e7eb;
+            --res: #eef2ff;
+            --tile: #f8fafc;
+            --hov: #f3f4f6;
+            --on: #eef2ff;
+            --onfg: #4338ca;
+            --err: #fef2f2;
+            --errfg: #b91c1c;
+            --ok: #047857;
+            --shade: #0006
+        }
+
+        @media (prefers-color-scheme:dark) {
+            :root:not([data-theme=light]) {
+                --bg: linear-gradient(160deg, #2b3a2f, #2c3d44 40%, #252f58 75%, #1e2b4a);
+                --bgc: #2c3d44;
+                --card: #1b2130;
+                --fg: #e5e7eb;
+                --mut: #9ca3af;
+                --a: #5a55e0;
+                --d: #4a45c8;
+                --hdr: #312e81;
+                --b: #2d3548;
+                --res: #232b40;
+                --tile: #232b3d;
+                --hov: #252d40;
+                --on: #2a3152;
+                --onfg: #a5b4fc;
+                --err: #3b1d22;
+                --errfg: #fca5a5;
+                --ok: #34d399;
+                color-scheme: dark
+            }
+        }
+
+        :root[data-theme=dark] {
+            --bg: linear-gradient(160deg, #2b3a2f, #2c3d44 40%, #252f58 75%, #1e2b4a);
+            --bgc: #2c3d44;
+            --card: #1b2130;
+            --fg: #e5e7eb;
+            --mut: #9ca3af;
+            --a: #5a55e0;
+            --d: #4a45c8;
+            --hdr: #312e81;
+            --b: #2d3548;
+            --res: #232b40;
+            --tile: #232b3d;
+            --hov: #252d40;
+            --on: #2a3152;
+            --onfg: #a5b4fc;
+            --err: #3b1d22;
+            --errfg: #fca5a5;
+            --ok: #34d399;
+            color-scheme: dark
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, sans-serif;
+            background-color: var(--bgc);
+            background-image: var(--bg);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--fg)
+        }
+
+        header {
+            background: var(--hdr);
+            color: #fff;
+            padding: 14px max(16px, env(safe-area-inset-right, 0px)) 14px max(16px, env(safe-area-inset-left, 0px));
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            cursor: pointer
+        }
+
+        #mb {
+            background: 0;
+            border: 0;
+            color: #fff;
+            font-size: 1.7rem;
+            cursor: pointer;
+            padding: 4px 8px
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: min(260px, 80vw);
+            z-index: 30;
+            background: var(--card);
+            transform: translateX(-100%);
+            transition: .3s;
+            box-shadow: 4px 0 20px var(--shade);
+            overflow-y: auto
+        }
+
+        nav.open {
+            transform: none
+        }
+
+        nav b {
+            display: flex;
+            justify-content: space-between;
+            padding: 18px 16px;
+            background: var(--hdr);
+            color: #fff;
+            font-size: 1.1rem
+        }
+
+        nav span {
+            cursor: pointer;
+            font-size: 1.5rem;
+            line-height: 1
+        }
+
+        nav button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            border: 0;
+            border-left: 4px solid transparent;
+            background: 0;
+            color: var(--fg);
+            padding: 14px 20px;
+            font-size: 1rem;
+            cursor: pointer
+        }
+
+        nav button:hover {
+            background: var(--hov)
+        }
+
+        nav .on {
+            background: var(--on);
+            color: var(--onfg);
+            border-left-color: var(--a);
+            font-weight: 600
+        }
+
+        #ov {
+            position: fixed;
+            inset: 0;
+            background: var(--shade);
+            opacity: 0;
+            pointer-events: none;
+            transition: .3s;
+            z-index: 20
+        }
+
+        #ov.show {
+            opacity: 1;
+            pointer-events: auto
+        }
+
+        main {
+            max-width: 560px;
+            margin: auto;
+            padding: 20px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px))
+        }
+
+        section {
+            display: none;
+            background: var(--card);
+            border: 1px solid var(--b);
+            border-radius: 12px;
+            padding: 20px
+        }
+
+        section.on {
+            display: block
+        }
+
+        h2 {
+            margin-top: 0
+        }
+
+        label {
+            display: block;
+            font-size: .9rem;
+            font-weight: 600;
+            margin: 12px 0 4px
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--b);
+            border-radius: 8px;
+            font: inherit;
+            background: var(--card);
+            color: var(--fg)
+        }
+
+        .row {
+            display: flex;
+            gap: 10px
+        }
+
+        .row>* {
+            flex: 1;
+            min-width: 0
+        }
+
+        .go {
+            margin-top: 16px;
+            width: 100%;
+            background: var(--a);
+            color: #fff;
+            border: 0;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer
+        }
+
+        .go:hover {
+            background: var(--d)
+        }
+
+        .res {
+            margin-top: 16px;
+            padding: 14px;
+            background: var(--res);
+            border-radius: 8px;
+            line-height: 1.7;
+            min-height: 20px;
+            overflow-wrap: anywhere
+        }
+
+        .res.err {
+            background: var(--err);
+            color: var(--errfg)
+        }
+
+        .hint {
+            color: var(--mut);
+            font-size: .85rem;
+            margin-top: 8px
+        }
+
+        .big {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--ok)
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 16px
+        }
+
+        .tile:last-child:nth-child(odd) {
+            grid-column: 1/-1
+        }
+
+        .tile {
+            background: var(--tile);
+            border: 1px solid var(--b);
+            border-radius: 10px;
+            padding: 14px;
+            cursor: pointer;
+            font: inherit;
+            color: var(--fg);
+            text-align: left;
+            transition: .15s
+        }
+
+        .tile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px var(--shade);
+            border-color: var(--a)
+        }
+
+        .tile i {
+            font-size: 1.6rem;
+            display: block;
+            font-style: normal
+        }
+
+        .tile b {
+            display: block
+        }
+
+        /* Phone: single column card, two-column tiles (default above) */
+        @media (max-width:420px) {
+            h1 {
+                font-size: 1.2rem
+            }
+
+            section {
+                padding: 16px
+            }
+
+            .tile {
+                padding: 12px
+            }
+        }
+
+        /* Phone: Home buttons as a line list instead of boxes */
+        @media (max-width:699px) {
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 0
+            }
+
+            .tile:last-child:nth-child(odd) {
+                grid-column: auto
+            }
+
+            .tile {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                background: none;
+                border: 0;
+                border-bottom: 1px solid var(--b);
+                border-radius: 0;
+                padding: 14px 4px
+            }
+
+            .tile:last-child {
+                border-bottom: 0
+            }
+
+            .tile:hover {
+                transform: none;
+                box-shadow: none;
+                background: var(--hov)
+            }
+
+            .tile i {
+                font-size: 1.4rem
+            }
+        }
+
+        /* Tablet */
+        @media (min-width:700px) {
+            main {
+                max-width: 720px;
+                padding-top: 28px
+            }
+
+            section {
+                padding: 28px
+            }
+
+            .grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 16px
+            }
+
+            .tile:last-child:nth-child(odd) {
+                grid-column: auto
+            }
+
+            .tile {
+                padding: 18px
+            }
+
+            h1 {
+                font-size: 1.6rem
+            }
+        }
+
+        /* Laptop and desktop */
+        @media (min-width:1100px) {
+            main {
+                max-width: 1000px;
+                padding-top: 40px
+            }
+
+            section {
+                padding: 36px
+            }
+
+            .grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr))
+            }
+
+            section:not(#home) {
+                max-width: 680px;
+                margin-inline: auto
+            }
+
+            h2 {
+                font-size: 1.6rem
+            }
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 2px solid var(--a);
+            outline-offset: 2px
+        }
+
+        @media (prefers-reduced-motion:reduce) {
+            * {
+                transition: none !important
+            }
+        }
+    </style>
+    <header><button id=mb aria-label=Menu>&#9776;</button>
+        <h1>Calculator Toolkit</h1>
+    </header>
+    <div id=ov></div>
+    <nav id=nav></nav>
+    <main>
+        <section id=home>
+            <h2>Welcome to Calculator Toolkit</h2>
+            <div class=grid id=g></div>
+        </section>
+        <section id=converter>
+            <h2>Unit Converter</h2>
+            <label>Conversion</label><select id=cvT>
+                <option value=c2f>Celsius to Fahrenheit (°C → °F)
+                <option value=f2c>Fahrenheit to Celsius (°F → °C)
+                <option value=m2ft>Meters to Feet (m → ft)
+                <option value=ft2m>Feet to Meters (ft → m)
+            </select>
+            <label id=cvL></label><input id=cvV type=number step=any value=1>
+            <button class=go id=cvB>Convert</button>
+            <div class=res id=cvR></div>
+            <p class=hint id=cvF></p>
+        </section>
+        <section id=payroll>
+            <h2>Payroll</h2>
+            <label>Hourly rate</label><input id=pR type=number step=any min=0 placeholder="e.g. 100">
+            <div class=row>
+                <div><label>Regular hours</label><input id=pH type=number step=any min=0 placeholder="e.g. 80"></div>
+                <div><label>Overtime hours</label><input id=pO type=number step=any min=0 value=0></div>
+            </div>
+            <div class=row>
+                <div><label>Overtime multiplier</label><input id=pM type=number step=any min=1 value=1.25></div>
+                <div><label>Deductions (%)</label><input id=pD type=number step=any min=0 max=100 value=0></div>
+            </div>
+            <button class=go id=pB>Compute Pay</button>
+            <div class=res id=pX></div>
+            <p class=hint>Deductions are a flat percentage of gross pay (e.g. social contributions, insurance).</p>
+        </section>
+        <section id=tax>
+            <h2>Income Tax (Philippines, annual)</h2>
+            <div class=row>
+                <div><label>Income entered is</label><select id=tP>
+                        <option value=12>Monthly
+                        <option value=1>Annual
+                    </select></div>
+                <div><label>Taxable income</label><input id=tI type=number step=any min=0></div>
+            </div>
+            <button class=go id=tB>Compute Tax</button>
+            <div class=res id=tR></div>
+            <p class=hint>Uses the TRAIN-law graduated rates effective 2023 onward (0% up to ₱250,000 … 35% above
+                ₱8,000,000). Estimate only; it ignores contributions, exemptions and other adjustments.</p>
+        </section>
+        <section id=factorial>
+            <h2>Factorial of N</h2>
+            <label>Enter N (a positive whole number)</label><input id=fN type=number min=1 step=1 placeholder="e.g. 5">
+            <button class=go id=fB>Compute N!</button>
+            <div class=res id=fR></div>
+            <p class=hint>Multiplies 1 × 2 × … × N using a <b>while loop</b>. Exact for large N (limit: 5000).</p>
+        </section>
+    </main>
+    <script>
+        const $ = i => document.getElementById(i), v = i => parseFloat($(i).value),
+            f = n => n.toLocaleString(void 0, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), p = n => "₱" + f(n),
+            out = (i, h, e) => { $(i).className = "res" + (e ? " err" : ""); $(i).innerHTML = h },
+            T = [["converter", "Unit Converter", "📏"], ["payroll", "Payroll", "💼"], ["tax", "Tax", "🧾"], ["factorial", "Factorial", "❗"]],
+            N = $("nav"), ov = $("ov");
+        N.innerHTML = "<b>Menu <span id=x>×</span></b>" + [["home", "Home"], ...T].map(t => `<button data-t=${t[0]}>${t[1]}</button>`).join("");
+        $("g").innerHTML = T.map(t => `<button class=tile data-t=${t[0]}><i>${t[2]}</i><b>${t[1]}</b></button>`).join("");
+        const menu = o => { N.classList.toggle("open", o); ov.classList.toggle("show", o) },
+            go = t => { document.querySelectorAll("section,nav button").forEach(e => e.classList.remove("on")); $(t).classList.add("on"); N.querySelector(`[data-t=${t}]`).classList.add("on"); menu(0) };
+        $("mb").onclick = () => menu(!N.classList.contains("open"));
+        $("x").onclick = ov.onclick = () => menu(0);
+        onkeydown = e => e.key == "Escape" && menu(0);
+        document.querySelector("h1").onclick = () => go("home");
+        onclick = e => { const c = e.target.closest("[data-t]"); c && go(c.dataset.t) };
+        go("home");
+
+        // Unit converter
+        const C = {
+            c2f: ["°C", "°F", x => x * 9 / 5 + 32, "°F = (°C × 9/5) + 32"], f2c: ["°F", "°C", x => (x - 32) * 5 / 9, "°C = (°F − 32) × 5/9"],
+            m2ft: ["m", "ft", x => x / .3048, "ft = m ÷ 0.3048  (1 m ≈ 3.28084 ft)"], ft2m: ["ft", "m", x => x * .3048, "m = ft × 0.3048"]
+        },
+            upd = () => { const c = C[$("cvT").value]; $("cvL").textContent = "Value in " + c[0]; $("cvF").textContent = "Formula: " + c[3]; $("cvR").textContent = "" };
+        $("cvT").onchange = upd; upd();
+        $("cvB").onclick = () => {
+            const x = v("cvV"); if (isNaN(x)) return out("cvR", "Please enter a valid number.", 1);
+            const c = C[$("cvT").value]; out("cvR", `${x} ${c[0]} = <span class=big>${+c[2](x).toPrecision(10)} ${c[1]}</span>`)
+        };
+
+        // Payroll
+        $("pB").onclick = () => {
+            const r = v("pR"), h = v("pH"), o = v("pO") || 0, m = v("pM") || 1, d = v("pD") || 0;
+            if (isNaN(r) || isNaN(h) || r < 0 || h < 0 || o < 0) return out("pX", "Enter a valid hourly rate and hours (no negatives).", 1);
+            const a = r * h, b = r * m * o, g = a + b, x = g * d / 100;
+            out("pX", `Regular pay: ${p(a)}<br>Overtime pay: ${p(b)}<br>Gross pay: <b>${p(g)}</b><br>Deductions (${d}%): −${p(x)}<br>Net pay: <span class=big>${p(g - x)}</span>`)
+        };
+
+        // Tax (PH TRAIN law, 2023+): [lower bound, base tax, rate on excess]
+        const BR = [[0, 0, 0], [25e4, 0, .15], [4e5, 22500, .2], [8e5, 102500, .25], [2e6, 402500, .3], [8e6, 2202500, .35]];
+        $("tB").onclick = () => {
+            const e = v("tI"); if (isNaN(e) || e < 0) return out("tR", "Enter a valid income (0 or more).", 1);
+            const a = e * $("tP").value; let b = BR[0]; BR.map(r => a > r[0] && (b = r)); const x = b[1] + (a - b[0]) * b[2];
+            out("tR", `Annual taxable income: ${p(a)}<br>Bracket rate: ${Math.round(b[2] * 100)}%<br>Annual tax: <span class=big>${p(x)}</span><br>Monthly tax (approx.): ${p(x / 12)}<br>Effective rate: ${(a ? x / a * 100 : 0).toFixed(2)}%<br>Income after tax (annual): ${p(a - x)}`)
+        };
+
+        // Factorial (while loop) of the first N natural numbers
+        const rn = (i, max) => { const s = $(i).value, n = +s; return s === "" || !Number.isInteger(n) || n < 1 ? "Enter a positive whole number (1 or more)." : n > max ? "Please use a number up to " + max.toLocaleString() + "." : n },
+            stp = (n, j) => n <= 10 ? Array.from({ length: n }, (_, k) => k + 1).join(j) + " = " : "";
+        $("fB").onclick = () => {
+            const n = rn("fN", 5e3); if (typeof n == "string") return out("fR", n, 1);
+            let r = 1n, i = 1n; while (i <= BigInt(n)) { r *= i; i++ } const s = "" + r;
+            out("fR", `${n}! = ${stp(n, " × ")}<span class=big style="word-break:break-all">${s.length > 300 ? s.slice(0, 300) + "… (" + s.length + " digits total)" : s}</span>`)
+        };
+    </script>
+
+</body>
+
+</html>
